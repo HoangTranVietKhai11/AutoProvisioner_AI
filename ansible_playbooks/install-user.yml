@@ -1,0 +1,13 @@
+---
+- name: Tao tai khoan quan tri Linux tu dong
+  hosts: all
+  become: yes
+  tasks:
+    - name: Tao user 'sysadmin' va cap quyen sudo
+      user:
+        name: sysadmin
+        groups: sudo
+        append: yes
+        shell: /bin/bash
+        # Mật khẩu mặc định là: 123
+        password: "{{ '123' | password_hash('sha512') }}"

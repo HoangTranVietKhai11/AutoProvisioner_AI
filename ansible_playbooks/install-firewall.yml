@@ -1,0 +1,38 @@
+---
+- name: Cau hinh Firewall bao mat cho toan he thong
+  hosts: all
+  become: yes
+  tasks:
+    - name: Cho phep SSH (Cong 22) de khong bi mat ket noi
+      ufw:
+        rule: allow
+        port: '22'
+        proto: tcp
+
+    - name: Cho phep HTTP (Cong 80)
+      ufw:
+        rule: allow
+        port: '80'
+        proto: tcp
+
+    - name: Cho phep HTTPS (Cong 443)
+      ufw:
+        rule: allow
+        port: '443'
+        proto: tcp
+
+    - name: Bat tuong lua UFW va chan cac ket noi khac
+      ufw:
+        state: enabled
+        default: deny
+    - name: Cho phep Node Exporter (Cong 9100)
+      ufw:
+        rule: allow
+        port: '9100'
+        proto: tcp
+    - name: Cho phep Grafana (Cong 3000)
+      ufw:
+        rule: allow
+        port: '3000'
+        proto: tcp
+

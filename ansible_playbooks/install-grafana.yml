@@ -1,0 +1,43 @@
+---
+- name: Cau hinh Prometheus va cai dat Grafana
+  hosts: monitor
+  become: yes
+  tasks:
+    - name: 1. Cai dat cac goi ho tro cho Grafana
+      apt:
+        name: [apt-transport-https, software-properties-common, wget, gpg]
+        state: present
+
+    - name: 2. Kich hoat Repository chinh thuc cua Grafana
+      shell: |
+        wget -q -O - https://apt.grafana.com/gpg.key | gpg --dearmor | sudo tee /etc/apt/keyrings/grafana.gpg > /dev/null
+        echo "deb [signed-by=/etc/apt/keyrings/grafana.gpg] https://apt.grafana.com stable main" | sudo tee /etc/apt/sources.list.d/grafana.list
+
+    - name: 3. Cai dat phan mem Grafana
+      apt:
+        name: grafana
+        state: present
+        update_cache: yes
+
+    - name: 4. Chay dich vu Grafana
+      systemd:
+        name: grafana-server
+        state: started
+        enabled: yes
+
+    - name: 5. Ket noi Prometheus voi cac may chu (Scrape Config)
+      copy:
+        dest: /etc/prometheus/prometheus.yml
+        content: |
+          global:
+            scrape_interval: 15s
+          scrape_configs:
+            - job_name: 'he_thong_cua_toi'
+              static_configs:
+                # IP cua 3 may: web01, db01, monitor01
+                - targets: ['10.45.10.253:9100', '10.45.10.222:9100', '10.45.10.75:9100']
+      
+    - name: 6. Khoi dong lai Prometheus de nhan cau hinh moi
+      systemd:
+        name: prometheus
+        state: restarted

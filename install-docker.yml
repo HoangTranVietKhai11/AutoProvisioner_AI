@@ -1,0 +1,27 @@
+---
+- name: Cài đặt Docker cho máy chủ Web
+  hosts: web
+  become: yes
+  tasks:
+    - name: Cập nhật danh sách gói phần mềm (apt update)
+      apt:
+        update_cache: yes
+
+    - name: Cài đặt Docker và Docker Compose
+      apt:
+        name: 
+          - docker.io
+          - docker-compose-v2
+        state: present
+
+    - name: Đảm bảo dịch vụ Docker đang chạy và tự khởi động cùng máy
+      systemd:
+        name: docker
+        state: started
+        enabled: yes
+        
+    - name: Cấp quyền cho user 'ubuntu' sử dụng Docker không cần sudo
+      user:
+        name: ubuntu
+        groups: docker
+        append: yes
