@@ -1,4 +1,4 @@
-# AutoProvisioner - Nền tảng Tự động hóa Hạ tầng 🚀
+# AutoProvisioner - Nền tảng Tự động hóa Hạ tầng
 
 ## Mô tả dự án (Overview)
 **AutoProvisioner** là nền tảng tự động hóa toàn bộ quy trình triển khai và cấu hình hạ tầng máy chủ bằng mã lệnh (Infrastructure as Code). Dự án được thiết kế để giải quyết bài toán vận hành nhiều máy chủ Linux cùng lúc một cách nhanh chóng, bảo mật và nhất quán.
@@ -22,15 +22,15 @@ Hệ thống được chia thành 4 máy chủ riêng biệt đảm nhận các 
 4. **`monitor01`**: Máy chủ Giám sát chạy Prometheus và Grafana.
 
 ## Các tính năng đã triển khai (Features)
-✅ **Bảo mật mạng (Security):** Tự động cấu hình kết nối SSH Key và thiết lập tường lửa UFW (chỉ mở cổng 22, 80, 443, 3000, 9090, 9100).
-✅ **Quản lý người dùng (User Management):** Tự động tạo và cấp quyền `sudo` cho tài khoản quản trị trên toàn bộ Cluster.
-✅ **Web Server Automation:** Tự động cài đặt Docker và Docker Compose.
-✅ **Database Automation:** Tự động cài đặt và khởi động PostgreSQL.
-✅ **Monitoring Integration:** Thu thập cấu hình phần cứng (CPU, RAM) bằng Node Exporter, gộp dữ liệu bằng Prometheus và hiển thị trực quan qua Dashboard của Grafana.
+- **Bảo mật mạng (Security):** Tự động cấu hình kết nối SSH Key và thiết lập tường lửa UFW (chỉ mở cổng 22, 80, 443, 3000, 9090, 9100).
+- **Quản lý người dùng (User Management):** Tự động tạo và cấp quyền `sudo` cho tài khoản quản trị trên toàn bộ Cluster.
+- **Web Server Automation:** Tự động cài đặt Docker và Docker Compose.
+- **Database Automation:** Tự động cài đặt và khởi động PostgreSQL.
+- **Monitoring Integration:** Thu thập cấu hình phần cứng (CPU, RAM) bằng Node Exporter, gộp dữ liệu bằng Prometheus và hiển thị trực quan qua Dashboard của Grafana.
 
 ---
 
-## 📸 Hình ảnh thực tế dự án (Proof of Work)
+## Hình ảnh thực tế dự án (Proof of Work)
 
 **1. Khởi tạo cụm 4 máy chủ (VM Provisioning):**
 ![Architecture 1](img/img01/5243047a9fd91e8747c8.jpg)
