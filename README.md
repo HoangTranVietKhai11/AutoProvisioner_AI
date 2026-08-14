@@ -53,11 +53,3 @@ Hệ thống được chia thành 4 máy chủ riêng biệt đảm nhận các 
 ![Monitoring 2](img/img04/My%20Documents%20[14-08-2026%2019_32]/71d21fe79844191a405511.jpg)
 ![Monitoring 3](img/img04/My%20Documents%20[14-08-2026%2019_32]/cdb29d871a249b7ac23510.jpg)
 
----
-
-## Hướng dẫn sử dụng (How to use)
-Toàn bộ kịch bản tự động hóa nằm trong thư mục `ansible_playbooks`. Để chạy kịch bản trên máy `ansible-controller`, sử dụng cú pháp:
-
-```bash
-ansible-playbook -i inventory <ten-file-kich-ban>.yml
-```
