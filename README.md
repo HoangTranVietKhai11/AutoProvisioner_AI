@@ -12,21 +12,23 @@ Hệ thống có khả năng tự động hóa việc kết nối SSH, thiết l
 * **Database:** PostgreSQL
 * **Monitoring:** Prometheus, Node Exporter, Grafana
 * **Security:** UFW (Uncomplicated Firewall), SSH Keys
+* **Automation & ChatOps:** Telegram Bot API
 
 ## Kiến trúc hệ thống (Architecture)
-Hệ thống được chia thành 4 máy chủ riêng biệt đảm nhận các vai trò khác nhau:
+Hệ thống được chia thành 5 máy chủ riêng biệt đảm nhận các vai trò khác nhau:
 
 1. **`ansible-controller`**: Máy trung tâm điều khiển cấu hình toàn hệ thống.
-2. **`web01`**: Máy chủ Web chạy Docker và Nginx.
+2. **`web01`, `web02`**: Cụm máy chủ Web chạy Docker (High Availability).
 3. **`db01`**: Máy chủ CSDL chạy PostgreSQL.
 4. **`monitor01`**: Máy chủ Giám sát chạy Prometheus và Grafana.
 
 ## Các tính năng đã triển khai (Features)
 - **Bảo mật mạng (Security):** Tự động cấu hình kết nối SSH Key và thiết lập tường lửa UFW (chỉ mở cổng 22, 80, 443, 3000, 9090, 9100).
 - **Quản lý người dùng (User Management):** Tự động tạo và cấp quyền `sudo` cho tài khoản quản trị trên toàn bộ Cluster.
-- **Web Server Automation:** Tự động cài đặt Docker và Docker Compose.
-- **Database Automation:** Tự động cài đặt và khởi động PostgreSQL.
-- **Monitoring Integration:** Thu thập cấu hình phần cứng (CPU, RAM) bằng Node Exporter, gộp dữ liệu bằng Prometheus và hiển thị trực quan qua Dashboard của Grafana.
+- **Web Server Automation:** Tự động cài đặt Docker và Docker Compose cho cụm Web.
+- **Database Automation:** Tự động cài đặt, khởi động PostgreSQL và đặt lịch Cronjob.
+- **Monitoring & Alerting:** Thu thập chỉ số (CPU, RAM) bằng Node Exporter, trực quan hóa qua Grafana và tự động gửi **cảnh báo (Alerts) qua Telegram** khi CPU quá tải (>80%).
+- **ChatOps & Auto Backup:** Tích hợp **Bot Telegram** cho phép quản trị viên ra lệnh từ xa (`/backup`) để tự động đóng gói và sao lưu Database an toàn.
 
 ---
 
