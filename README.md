@@ -74,6 +74,6 @@ Hệ thống được chia thành 5 máy chủ riêng biệt đảm nhận các 
 - **Ảnh 3:** Chụp màn hình lệnh `/backup` thành công hiển thị dung lượng file nén.
 ![ChatOps Backup](img/chatbot/chatops/anh3/image.png)
 - **Video 1 (test toàn bộ lệnh của chatbot)**: 
-<video src="img/chatbot/chatops/video01/89503423752091132741.mp4" controls width="100%"></video>
+[🎥 Bấm vào đây để xem Video Demo Test ChatOps](img/chatbot/chatops/video01/89503423752091132741.mp4)
 - **Video 2 (ChatOps & CI/CD):** Quay màn hình điện thoại thao tác gõ lệnh `/deploy` và `/restart_web` cực mượt mà.
-<video src="img/chatbot/chatops/video2/5855831333754878758.mp4" controls width="100%"></video>
+[🎥 Bấm vào đây để xem Video Demo ChatOps Operations](img/chatbot/chatops/video2/5855831333754878758.mp4)
