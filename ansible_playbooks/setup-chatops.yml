@@ -1,0 +1,108 @@
+---
+- name: Setup ChatOps Telegram Bot on Ansible Controller
+  hosts: localhost
+  connection: local
+  become: yes
+  tasks:
+    - name: Install python3-requests
+      apt:
+        name: python3-requests
+        state: present
+        update_cache: yes
+
+    - name: Create ChatOps bot script
+      copy:
+        dest: /usr/local/bin/chatops_bot.py
+        mode: '0755'
+        content: |
+          #!/usr/bin/env python3
+          import time
+          import requests
+          import subprocess
+          import re
+
+          TOKEN = "8212555218:AAHnz_-7zjwKkNoM5awyFIW8ZbE5HuUBu6M"
+          CHAT_ID = 8086992237
+          URL = f"https://api.telegram.org/bot{TOKEN}"
+
+          def send_message(text):
+              requests.post(f"{URL}/sendMessage", json={"chat_id": CHAT_ID, "text": text})
+
+          def get_updates(offset):
+              try:
+                  resp = requests.get(f"{URL}/getUpdates", params={"timeout": 60, "offset": offset}).json()
+                  return resp.get("result", [])
+              except Exception:
+                  return []
+
+          def trigger_backup():
+              send_message("⏳ Đang ra lệnh cho db01 sao lưu Database, vui lòng đợi...")
+              
+              # Run the backup command via Ansible
+              try:
+                  result = subprocess.run(
+                      ["ansible", "db", "-i", "/home/ubuntu/inventory", "-b", "-m", "command", "-a", "/opt/backups/backup.sh"],
+                      capture_output=True, text=True, check=True
+                  )
+                  
+                  # Get the latest file
+                  result_ls = subprocess.run(
+                      ["ansible", "db", "-i", "/home/ubuntu/inventory", "-b", "-m", "command", "-a", "ls -lht /opt/backups/"],
+                      capture_output=True, text=True, check=True
+                  )
+                  
+                  # Parse output to find the first .sql.gz file
+                  lines = result_ls.stdout.split('\n')
+                  for line in lines:
+                      if ".sql.gz" in line:
+                          parts = line.split()
+                          size = parts[4]
+                          filename = parts[-1]
+                          send_message(f"✅ Sao lưu thành công!\n📁 Tên file: {filename}\n📦 Dung lượng: {size}")
+                          return
+                  send_message("⚠️ Sao lưu thành công nhưng không tìm thấy file mới.")
+              except subprocess.CalledProcessError as e:
+                  send_message(f"❌ Lỗi khi chạy sao lưu!\n{e.stderr}")
+
+          def main():
+              last_update_id = None
+              send_message("🤖 Bot ChatOps đã khởi động! Gõ /backup để tiến hành sao lưu dữ liệu nhé sếp.")
+              
+              while True:
+                  updates = get_updates(last_update_id)
+                  for update in updates:
+                      last_update_id = update["update_id"] + 1
+                      if "message" in update and "text" in update["message"]:
+                          text = update["message"]["text"]
+                          chat_id = update["message"]["chat"]["id"]
+                          
+                          if chat_id == CHAT_ID and text.strip() == "/backup":
+                              trigger_backup()
+                  time.sleep(1)
+
+          if __name__ == "__main__":
+              main()
+
+    - name: Create Systemd service for ChatOps bot
+      copy:
+        dest: /etc/systemd/system/chatops.service
+        content: |
+          [Unit]
+          Description=Telegram ChatOps Bot
+          After=network.target
+
+          [Service]
+          ExecStart=/usr/local/bin/chatops_bot.py
+          Restart=always
+          User=ubuntu
+          Environment=PYTHONUNBUFFERED=1
+
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: Enable and start ChatOps service
+      systemd:
+        name: chatops
+        enabled: yes
+        state: restarted
+        daemon_reload: yes

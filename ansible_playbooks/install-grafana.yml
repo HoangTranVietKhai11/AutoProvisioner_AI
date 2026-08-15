@@ -35,7 +35,7 @@
             - job_name: 'he_thong_cua_toi'
               static_configs:
                 # IP cua 3 may: web01, db01, monitor01
-                - targets: ['10.45.10.253:9100', '10.45.10.222:9100', '10.45.10.75:9100']
+                - targets: ['10.45.10.84:9100', '10.45.10.254:9100', '10.45.10.222:9100', '10.45.10.120:9100']
       
     - name: 6. Khoi dong lai Prometheus de nhan cau hinh moi
       systemd:
