@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VNETWORK - High Availability Demo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="background-effects">
+        <div class="glow-orb orb-1"></div>
+        <div class="glow-orb orb-2"></div>
+    </div>
+
+    <div class="container">
+        <header class="glass-panel">
+            <div class="logo">
+                <span class="v">V</span>NETWORK <span class="badge">DEMO</span>
+            </div>
+            <nav>
+                <a href="#">Hạ tầng</a>
+                <a href="#">Truyền tải</a>
+                <a href="#">Bảo mật</a>
+            </nav>
+        </header>
+
+        <main>
+            <section class="hero">
+                <div class="hero-content">
+                    <span class="subtitle">Trung Tâm Ứng Cứu An Ninh Mạng Toàn Diện</span>
+                    <h1>Dẫn đầu các giải pháp hạ tầng, truyền tải<br>và an toàn an ninh mạng</h1>
+                    <p>Hệ sinh thái toàn diện giúp doanh nghiệp tích hợp AI, chuyển đổi số an toàn, hiệu quả và bền vững.</p>
+                    
+                    <div class="server-status glass-panel alert-box">
+                        <div class="pulse-indicator"></div>
+                        <div class="status-info">
+                            <h3>High Availability Cluster</h3>
+                            <p>Yêu cầu của bạn đang được xử lý bởi máy chủ:</p>
+                            <div class="node-badge">
+                                <span class="node-icon">🖥️</span>
+                                <span class="node-name">{{NODE_NAME}}</span>
+                                <span class="node-ip">{{NODE_IP}}</span>
+                            </div>
+                            <p class="hint">Thử tải lại trang (F5) hoặc tắt máy chủ hiện tại để thấy Cân bằng tải hoạt động!</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="stats">
+                <div class="stat-card glass-panel">
+                    <h3>2,300+</h3>
+                    <p>PoPs toàn cầu</p>
+                </div>
+                <div class="stat-card glass-panel">
+                    <h3>2,000+</h3>
+                    <p>Khách hàng tin dùng</p>
+                </div>
+                <div class="stat-card glass-panel">
+                    <h3>SOC 24/7</h3>
+                    <p>Hệ thống giám sát</p>
+                </div>
+                <div class="stat-card glass-panel">
+                    <h3>121/GP-BTTTT</h3>
+                    <p>Giấy phép an toàn mạng</p>
+                </div>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

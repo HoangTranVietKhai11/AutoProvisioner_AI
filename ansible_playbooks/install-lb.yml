@@ -1,0 +1,33 @@
+---
+- name: Setup Nginx Load Balancer
+  hosts: localhost
+  connection: local
+  become: yes
+  tasks:
+    - name: Install Nginx
+      apt:
+        name: nginx
+        state: present
+        update_cache: yes
+
+    - name: Remove default Nginx config
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+
+    - name: Deploy Load Balancer config
+      template:
+        src: nginx-lb.conf.j2
+        dest: /etc/nginx/sites-available/load-balancer.conf
+
+    - name: Enable Load Balancer config
+      file:
+        src: /etc/nginx/sites-available/load-balancer.conf
+        dest: /etc/nginx/sites-enabled/load-balancer.conf
+        state: link
+
+    - name: Restart and enable Nginx
+      systemd:
+        name: nginx
+        state: restarted
+        enabled: yes

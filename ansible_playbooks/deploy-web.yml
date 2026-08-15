@@ -1,0 +1,32 @@
+---
+- name: Deploy VNETWORK Website
+  hosts: web
+  become: yes
+  tasks:
+    - name: Ensure app directory exists
+      file:
+        path: /opt/vnetwork-web
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+        mode: '0755'
+
+    - name: Copy source code to web nodes
+      copy:
+        src: vnetwork-web/
+        dest: /opt/vnetwork-web/
+        owner: ubuntu
+        group: ubuntu
+        mode: '0755'
+
+    - name: Process docker-compose template
+      template:
+        src: vnetwork-web/docker-compose.yml.j2
+        dest: /opt/vnetwork-web/docker-compose.yml
+        owner: ubuntu
+        group: ubuntu
+
+    - name: Build and run Docker containers
+      command: docker compose up -d --build
+      args:
+        chdir: /opt/vnetwork-web

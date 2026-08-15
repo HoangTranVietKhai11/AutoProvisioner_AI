@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    image: vnetwork-web:latest
+    container_name: vnetwork_web
+    ports:
+      - "80:80"
+    environment:
+      - NODE_NAME={{ inventory_hostname }}
+      - NODE_IP={{ ansible_host }}
+    restart: always
