@@ -1,0 +1,12 @@
+[web]
+web01 ansible_host=10.45.10.84
+web02 ansible_host=10.45.10.254
+
+[db]
+db01 ansible_host=10.45.10.222
+
+[monitor]
+monitor01 ansible_host=10.45.10.120
+
+[all:vars]
+ansible_ssh_common_args='-o StrictHostKeyChecking=no'

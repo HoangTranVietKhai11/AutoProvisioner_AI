@@ -1,0 +1,21 @@
+---
+- name: Cai dat Database PostgreSQL
+  hosts: db
+  become: yes
+  tasks:
+    - name: Cap nhat apt cache
+      apt:
+        update_cache: yes
+
+    - name: Cai dat phan mem PostgreSQL
+      apt:
+        name: 
+          - postgresql
+          - postgresql-contrib
+        state: present
+
+    - name: Dam bao dich vu PostgreSQL dang chay
+      systemd:
+        name: postgresql
+        state: started
+        enabled: yes

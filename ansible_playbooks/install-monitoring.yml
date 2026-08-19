@@ -1,0 +1,27 @@
+---
+# Giai đoạn 1: Cài "camera" lên tất cả các máy
+- name: Cai dat Node Exporter tren toan bo he thong
+  hosts: all
+  become: yes
+  tasks:
+    - name: Cai dat goi phan mem prometheus-node-exporter
+      apt:
+        name: prometheus-node-exporter
+        state: present
+        update_cache: yes
+
+# Giai đoạn 2: Cài "Máy chủ gom dữ liệu" lên duy nhất máy Monitor
+- name: Cai dat Prometheus tren may Monitor
+  hosts: monitor
+  become: yes
+  tasks:
+    - name: Cai dat trung tam giam sat Prometheus
+      apt:
+        name: prometheus
+        state: present
+
+    - name: Dam bao Prometheus luon chay
+      systemd:
+        name: prometheus
+        state: started
+        enabled: yes

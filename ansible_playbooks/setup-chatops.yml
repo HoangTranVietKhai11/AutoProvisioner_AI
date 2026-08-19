@@ -1,0 +1,203 @@
+---
+- name: Setup ChatOps Telegram Bot on Ansible Controller
+  hosts: localhost
+  connection: local
+  become: yes
+  vars:
+    telegram_bot_token: "{{ lookup('env', 'TELEGRAM_BOT_TOKEN') | default('YOUR_TELEGRAM_BOT_TOKEN_HERE', true) }}"
+    telegram_chat_id: "{{ lookup('env', 'TELEGRAM_CHAT_ID') | default('YOUR_TELEGRAM_CHAT_ID_HERE', true) }}"
+  tasks:
+    - name: Install python3-requests
+      apt:
+        name: python3-requests
+        state: present
+        update_cache: yes
+
+    - name: Create ChatOps environment file for credentials
+      copy:
+        dest: /etc/chatops.env
+        owner: root
+        group: root
+        mode: '0600'
+        content: |
+          TELEGRAM_BOT_TOKEN={{ telegram_bot_token }}
+          TELEGRAM_CHAT_ID={{ telegram_chat_id }}
+
+    - name: Create ChatOps bot script
+      copy:
+        dest: /usr/local/bin/chatops_bot.py
+        mode: '0755'
+        content: |
+          #!/usr/bin/env python3
+          import os
+          import sys
+          import time
+          import requests
+          import subprocess
+          import re
+
+          TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
+          CHAT_ID_RAW = os.environ.get("TELEGRAM_CHAT_ID", "").strip()
+
+          if not TOKEN or TOKEN == "YOUR_TELEGRAM_BOT_TOKEN_HERE":
+              print("Error: TELEGRAM_BOT_TOKEN environment variable is not set or invalid.")
+              sys.exit(1)
+
+          try:
+              CHAT_ID = int(CHAT_ID_RAW)
+          except ValueError:
+              print("Error: TELEGRAM_CHAT_ID environment variable is not set or invalid integer.")
+              sys.exit(1)
+
+          URL = f"https://api.telegram.org/bot{TOKEN}"
+
+          def send_message(text):
+              requests.post(f"{URL}/sendMessage", json={"chat_id": CHAT_ID, "text": text})
+
+          def get_updates(offset):
+              try:
+                  resp = requests.get(f"{URL}/getUpdates", params={"timeout": 60, "offset": offset}).json()
+                  return resp.get("result", [])
+              except Exception:
+                  return []
+
+          def trigger_backup():
+              send_message("⏳ Đang ra lệnh cho db01 sao lưu Database, vui lòng đợi...")
+              try:
+                  subprocess.run(["ansible", "db", "-i", "/home/ubuntu/inventory", "-b", "-m", "command", "-a", "/opt/backups/backup.sh"], capture_output=True, text=True, check=True)
+                  result_ls = subprocess.run(["ansible", "db", "-i", "/home/ubuntu/inventory", "-b", "-m", "command", "-a", "ls -lht /opt/backups/"], capture_output=True, text=True, check=True)
+                  lines = result_ls.stdout.split('\n')
+                  for line in lines:
+                      if ".sql.gz" in line:
+                          parts = line.split()
+                          send_message(f"✅ Sao lưu thành công!\n📁 Tên file: {parts[-1]}\n📦 Dung lượng: {parts[4]}")
+                          return
+                  send_message("⚠️ Sao lưu thành công nhưng không tìm thấy file mới.")
+              except Exception as e:
+                  send_message(f"❌ Lỗi khi chạy sao lưu!\n{e}")
+
+          def check_status():
+              send_message("🔍 Đang kiểm tra trạng thái RAM, CPU và Web (web01, web02)...")
+              try:
+                  script = "echo '🖥️ CPU Usage: '$(top -bn1 | grep 'Cpu(s)' | awk '{print $2 + $4}')'%'; echo '💾 RAM Usage: '$(free -m | awk 'NR==2{printf \"%.2f%% (%sMB/%sMB)\", $3*100/$2, $3, $2 }'); echo '🐳 Web Container: '$(docker ps -f name=vnetwork_web | grep -o 'Up [^a-z]*[a-z]*')"
+                  result = subprocess.run(["ansible", "web", "-i", "/home/ubuntu/inventory", "-b", "-m", "shell", "-a", script], capture_output=True, text=True)
+                  out = result.stdout.replace(" | CHANGED | rc=0 >>\n", "\n")
+                  if result.stderr:
+                      out += f"\n⚠️ Cảnh báo: {result.stderr}"
+                  send_message(f"📊 Kết quả kiểm tra:\n\n{out}")
+              except Exception as e:
+                  send_message(f"❌ Lỗi khi kiểm tra trạng thái!\n{e}")
+
+          def restart_web():
+              send_message("🔄 Đang khởi động lại Docker trên toàn bộ Cluster...")
+              try:
+                  subprocess.run(["ansible", "web", "-i", "/home/ubuntu/inventory", "-b", "-m", "command", "-a", "docker restart vnetwork_web"], capture_output=True, text=True)
+                  send_message("✅ Đã khởi động lại Web thành công trên web01 và web02!")
+              except Exception as e:
+                  send_message(f"❌ Lỗi khi khởi động lại Web!\n{e}")
+
+          def get_logs():
+              send_message("📄 Đang lấy 10 dòng log báo lỗi mới nhất...")
+              try:
+                  result = subprocess.run(["ansible", "web", "-i", "/home/ubuntu/inventory", "-b", "-m", "command", "-a", "docker logs --tail 10 vnetwork_web"], capture_output=True, text=True)
+                  out = result.stdout.replace(" | CHANGED | rc=0 >>\n", "\n")
+                  send_message(f"📋 Logs:\n{out}")
+              except Exception as e:
+                  send_message(f"❌ Lỗi khi lấy logs!\n{e}")
+
+          def check_db_size():
+              send_message("💽 Đang kiểm tra dung lượng ổ cứng Database...")
+              try:
+                  script = "echo '📦 Dung lượng thư mục Postgres: '$(du -sh /var/lib/postgresql | awk '{print $1}'); echo '💽 Ổ cứng còn trống: '$(df -h / | awk 'NR==2{print $4}')"
+                  result = subprocess.run(["ansible", "db", "-i", "/home/ubuntu/inventory", "-b", "-m", "shell", "-a", script], capture_output=True, text=True)
+                  out = result.stdout.replace(" | CHANGED | rc=0 >>\n", "\n")
+                  send_message(f"📊 Kết quả:\n{out}")
+              except Exception as e:
+                  send_message(f"❌ Lỗi khi kiểm tra DB!\n{e}")
+
+          def clear_cache():
+              send_message("🧹 Đang điều hướng Nginx Load Balancer tải lại cấu hình (Clear Cache)...")
+              try:
+                  subprocess.run(["sudo", "systemctl", "reload", "nginx"], capture_output=True, text=True)
+                  send_message("✅ Đã xử lý cache thành công!")
+              except Exception as e:
+                  send_message(f"❌ Lỗi xử lý cache!\n{e}")
+
+          def trigger_deploy():
+              send_message("🚀 Đang chạy Ansible để Build Docker Image, phân phối sang Worker và cập nhật K8s...")
+              try:
+                  subprocess.run(["ansible-playbook", "-i", "/home/ubuntu/inventory", "/home/ubuntu/deploy-k8s.yml", "-u", "ubuntu"], capture_output=True, text=True, check=True)
+                  send_message("✅ Triển khai phiên bản K8s mới thành công! Hệ thống đang tự động Rolling Update.")
+              except Exception as e:
+                  send_message(f"❌ Lỗi triển khai K8s!\n{e}")
+
+          def block_ip(ip):
+              send_message(f"🛡️ Đang chặn IP {ip} bằng tường lửa (UFW)...")
+              try:
+                  # Chặn trên các máy Web con bằng Ansible
+                  subprocess.run(["ansible", "web", "-i", "/home/ubuntu/inventory", "-b", "-m", "command", "-a", f"ufw deny from {ip}"], capture_output=True, text=True)
+                  # Dùng sudo để chặn ngay tại cổng Load Balancer
+                  subprocess.run(["sudo", "ufw", "deny", "from", ip], capture_output=True, text=True)
+                  send_message(f"✅ Đã đưa IP {ip} vào danh sách đen (Blacklist) toàn hệ thống!")
+              except Exception as e:
+                  send_message(f"❌ Lỗi chặn IP!\n{e}")
+
+          def main():
+              last_update_id = None
+              send_message("🤖 Bot ChatOps VNETWORK đã nâng cấp thành công!\nCác lệnh hiện có:\n- /backup\n- /status\n- /restart_web\n- /logs\n- /db_size\n- /clear_cache\n- /deploy\n- /block_ip <địa chỉ ip>")
+              
+              while True:
+                  updates = get_updates(last_update_id)
+                  for update in updates:
+                      last_update_id = update["update_id"] + 1
+                      if "message" in update and "text" in update["message"]:
+                          text = update["message"]["text"].strip()
+                          chat_id = update["message"]["chat"]["id"]
+                          
+                          if chat_id == CHAT_ID:
+                              if text == "/backup":
+                                  trigger_backup()
+                              elif text == "/status":
+                                  check_status()
+                              elif text == "/restart_web":
+                                  restart_web()
+                              elif text == "/logs":
+                                  get_logs()
+                              elif text == "/db_size":
+                                  check_db_size()
+                              elif text == "/clear_cache":
+                                  clear_cache()
+                              elif text == "/deploy":
+                                  trigger_deploy()
+                              elif text.startswith("/block_ip "):
+                                  ip = text.split(" ")[1]
+                                  block_ip(ip)
+                  time.sleep(1)
+
+          if __name__ == "__main__":
+              main()
+
+    - name: Create Systemd service for ChatOps bot
+      copy:
+        dest: /etc/systemd/system/chatops.service
+        content: |
+          [Unit]
+          Description=Telegram ChatOps Bot
+          After=network.target
+
+          [Service]
+          ExecStart=/usr/local/bin/chatops_bot.py
+          Restart=always
+          User=ubuntu
+          EnvironmentFile=/etc/chatops.env
+          Environment=PYTHONUNBUFFERED=1
+
+          [Install]
+          WantedBy=multi-user.target
+
+    - name: Enable and start ChatOps service
+      systemd:
+        name: chatops
+        enabled: yes
+        state: restarted
+        daemon_reload: yes

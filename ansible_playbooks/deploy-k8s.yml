@@ -1,0 +1,60 @@
+---
+- name: Bước 1 - Đóng gói Docker Image trên Ansible Controller
+  hosts: localhost
+  connection: local
+  become: yes
+  tasks:
+    - name: Cài đặt Docker (nếu chưa có)
+      apt:
+        name: docker.io
+        state: present
+        update_cache: yes
+
+    - name: Cấp quyền cho user ubuntu dùng Docker
+      user:
+        name: ubuntu
+        groups: docker
+        append: yes
+
+    - name: Build Docker Image từ mã nguồn vnetwork-web
+      command: docker build -t vnetwork-web:latest ./vnetwork-web
+      args:
+        chdir: /home/ubuntu
+
+    - name: Xuất Docker Image ra file nén .tar
+      command: docker save -o /tmp/vnetwork-web.tar vnetwork-web:latest
+
+    - name: Đổi quyền file tar cho user ubuntu
+      file:
+        path: /tmp/vnetwork-web.tar
+        owner: ubuntu
+        group: ubuntu
+        mode: '0644'
+
+- name: Bước 2 - Phân phối và Import Image vào các K8s Worker
+  hosts: web
+  become: yes
+  tasks:
+    - name: Copy file Image .tar sang Worker nodes
+      copy:
+        src: /tmp/vnetwork-web.tar
+        dest: /tmp/vnetwork-web.tar
+
+    - name: Nạp Image vào Containerd của K3s
+      command: k3s ctr images import /tmp/vnetwork-web.tar
+
+- name: Bước 3 - Cập nhật (Rolling Update) lên Kubernetes
+  hosts: localhost
+  connection: local
+  become: yes
+  tasks:
+    - name: Đặt ImagePullPolicy thành Never để ưu tiên Image Local
+      command: >
+        k3s kubectl patch deployment my-web-app
+        -p '{"spec":{"template":{"spec":{"containers":[{"name":"hello","imagePullPolicy":"Never"}]}}}}'
+
+    - name: Đổi Image của Deployment sang bản mới build
+      command: k3s kubectl set image deployment/my-web-app hello=vnetwork-web:latest
+
+    - name: Khởi động lại các Pods để áp dụng Code mới
+      command: k3s kubectl rollout restart deployment my-web-app

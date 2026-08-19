@@ -1,0 +1,29 @@
+---
+- name: Tao tai khoan quan tri Linux tu dong
+  hosts: all
+  become: yes
+  vars:
+    sysadmin_ssh_key: "{{ lookup('file', '~/.ssh/id_rsa.pub', errors='ignore') | default('', true) }}"
+  tasks:
+    - name: Tao user 'sysadmin' (khoa password, chi dung SSH key)
+      user:
+        name: sysadmin
+        groups: sudo
+        append: yes
+        shell: /bin/bash
+        password_lock: yes
+
+    - name: Them SSH Public Key cho user 'sysadmin'
+      authorized_key:
+        user: sysadmin
+        state: present
+        key: "{{ sysadmin_ssh_key }}"
+      when: sysadmin_ssh_key != ''
+
+    - name: Cap quyen sudo khong can mat khau cho 'sysadmin'
+      copy:
+        dest: /etc/sudoers.d/sysadmin
+        content: "sysadmin ALL=(ALL) NOPASSWD:ALL\n"
+        mode: '0440'
+        validate: 'visudo -cf %s'
+
