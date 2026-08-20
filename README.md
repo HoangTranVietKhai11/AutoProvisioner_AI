@@ -1,4 +1,4 @@
-# AutoProvisioner AI 🚀
+# AutoProvisioner AI
 
 Automated Infrastructure Provisioning & High Availability Web Cluster powered by Ansible, Docker, and Telegram ChatOps.
 
@@ -7,11 +7,11 @@ Automated Infrastructure Provisioning & High Availability Web Cluster powered by
 [![Nginx](https://img.shields.io/badge/Nginx-Load%20Balancer-green.svg?logo=nginx)](https://nginx.org/)
 [![Telegram](https://img.shields.io/badge/Telegram-ChatOps-blue.svg?logo=telegram)](https://telegram.org/)
 
-> 📖 **[Hướng dẫn khởi động lại hệ thống (STARTUP_GUIDE.md)](STARTUP_GUIDE.md)**
+> **[Hướng dẫn khởi động lại hệ thống (STARTUP_GUIDE.md)](STARTUP_GUIDE.md)**
 
 ---
 
-## 📐 Kiến Trúc Hạ Tầng (System Architecture)
+## Kiến Trúc Hạ Tầng (System Architecture)
 
 Hệ thống triển khai 5 nút dịch vụ độc lập với quy hoạch mạng chi tiết:
 
@@ -25,14 +25,14 @@ Hệ thống triển khai 5 nút dịch vụ độc lập với quy hoạch mạ
 
 ---
 
-## 🔥 Tính Năng Trọng Tâm
+## Tính Năng Trọng Tâm
 
-- ⚙️ **Infrastructure as Code (IaC):** Tự động hóa 100% việc khởi tạo và cấu hình môi trường bằng Ansible Playbooks.
-- ⚖️ **High Availability & Cân Bằng Tải:** Nginx phân phối lưu lượng truy cập giữa `web01` và `web02`, đảm bảo hệ thống duy trì hoạt động ngay cả khi 1 node gặp sự cố.
-- 🛡️ **Bảo Mật & Tường Lửa:** Tự động thiết lập UFW Firewall, chỉ mở các cổng giao tiếp bắt buộc và phân quyền nghiêm ngặt qua SSH Keypair.
-- 💾 **Sao Lưu Dữ Liệu Tự Động:** Ansible Playbook tự động dump và nén sao lưu CSDL PostgreSQL theo định kỳ.
-- 📊 **Giám Sát & Thu Thập Log Tập Trung:** Ngăn xếp Prometheus + Grafana + Loki + Promtail thu thập chỉ số tài nguyên và syslog thời gian thực.
-- 🤖 **Telegram ChatOps:** Điều khiển và giám sát hạ tầng trực tiếp qua tin nhắn Telegram:
+- **Infrastructure as Code (IaC):** Tự động hóa 100% việc khởi tạo và cấu hình môi trường bằng Ansible Playbooks.
+- **High Availability & Cân Bằng Tải:** Nginx phân phối lưu lượng truy cập giữa `web01` và `web02`, đảm bảo hệ thống duy trì hoạt động ngay cả khi 1 node gặp sự cố.
+- **Bảo Mật & Tường Lửa:** Tự động thiết lập UFW Firewall, chỉ mở các cổng giao tiếp bắt buộc và phân quyền nghiêm ngặt qua SSH Keypair.
+- **Sao Lưu Dữ Liệu Tự Động:** Ansible Playbook tự động dump và nén sao lưu CSDL PostgreSQL theo định kỳ.
+- **Giám Sát & Thu Thập Log Tập Trung:** Ngăn xếp Prometheus + Grafana + Loki + Promtail thu thập chỉ số tài nguyên và syslog thời gian thực.
+- **Telegram ChatOps:** Điều khiển và giám sát hạ tầng trực tiếp qua tin nhắn Telegram:
   - `/deploy` - Kích hoạt CI/CD cập nhật mã nguồn mới.
   - `/status` - Kiểm tra thông số CPU, RAM, Uptime toàn cụm server.
   - `/backup` - Ra lệnh sao lưu CSDL tức thì.
@@ -42,7 +42,7 @@ Hệ thống triển khai 5 nút dịch vụ độc lập với quy hoạch mạ
 
 ---
 
-## 📸 Minh Chứng Triển Khai (Proof of Concept)
+## Minh Chứng Triển Khai (Proof of Concept)
 
 ### 1. Hạ Tầng & Tự Động Hóa Ansible
 - **Khởi tạo Nodes (Multipass):**
@@ -80,15 +80,15 @@ Hệ thống triển khai 5 nút dịch vụ độc lập với quy hoạch mạ
 
 ---
 
-### 🎥 Video Demo Thực Tế
-- 🍿 **[Video Demo Lệnh ChatOps](https://youtube.com/shorts/OJx1HamoE5Q)**
-- 🍿 **[Video Demo ChatOps & CI/CD Deployment](https://youtube.com/shorts/bH1r4yzjVTc)**
+### Video Demo Thực Tế
+- **[Video Demo Lệnh ChatOps](https://youtube.com/shorts/OJx1HamoE5Q)**
+- **[Video Demo ChatOps & CI/CD Deployment](https://youtube.com/shorts/bH1r4yzjVTc)**
 
 ---
 
-## 🗺️ Lộ Trình Phát Triển (Future Roadmap)
+## Lộ Trình Phát Triển (Future Roadmap)
 
-- 🔄 **PostgreSQL High Availability:** Triển khai mô hình Replication (Master-Slave) với Patroni/Repmgr để tự động chuyển vùng sự cố (Failover).
-- 📦 **Chiến Lược Backup 3-2-1:** Tự động đồng bộ bản sao lưu ra Storage Server (NAS) độc lập, cách ly để bảo vệ dữ liệu khỏi Ransomware.
-- 🔀 **Cân Bằng Tải Dự Phòng (Keepalived & HAProxy):** Thiết lập IP ảo (Virtual IP) cho cụm Load Balancer chống đơn điểm sự cố (Single Point of Failure).
-- 🔒 **Bảo Mật Nâng Cao:** Triển khai Fail2Ban chống Brute-force và kết nối quản trị qua WireGuard VPN.
+- **PostgreSQL High Availability:** Triển khai mô hình Replication (Master-Slave) với Patroni/Repmgr để tự động chuyển vùng sự cố (Failover).
+- **Chiến Lược Backup 3-2-1:** Tự động đồng bộ bản sao lưu ra Storage Server (NAS) độc lập, cách ly để bảo vệ dữ liệu khỏi Ransomware.
+- **Cân Bằng Tải Dự Phòng (Keepalived & HAProxy):** Thiết lập IP ảo (Virtual IP) cho cụm Load Balancer chống đơn điểm sự cố (Single Point of Failure).
+- **Bảo Mật Nâng Cao:** Triển khai Fail2Ban chống Brute-force và kết nối quản trị qua WireGuard VPN.
