@@ -7,7 +7,6 @@ Automated Infrastructure Provisioning & High Availability Web Cluster powered by
 [![Nginx](https://img.shields.io/badge/Nginx-Load%20Balancer-green.svg?logo=nginx)](https://nginx.org/)
 [![Telegram](https://img.shields.io/badge/Telegram-ChatOps-blue.svg?logo=telegram)](https://telegram.org/)
 
-> **[Hướng dẫn khởi động lại hệ thống (STARTUP_GUIDE.md)](STARTUP_GUIDE.md)**
 
 ---
 
