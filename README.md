@@ -1,7 +1,6 @@
 # AutoProvisioner_AI
 Hệ thống cung cấp hạ tầng tự động & Cụm máy chủ Web độ sẵn sàng cao (High Availability) với Ansible, Docker và Telegram ChatOps.
 
-> 📖 **[Xem Hướng dẫn Bật / Khởi động lại hệ thống sau khi Tắt máy](STARTUP_GUIDE.md)**
 
 ## Kiến trúc hệ thống
 Hệ thống được chia thành 5 máy chủ riêng biệt đảm nhận các vai trò khác nhau, bao gồm:
