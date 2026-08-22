@@ -1,93 +1,72 @@
-# AutoProvisioner AI
+# AutoProvisioner_AI
+Hệ thống cung cấp hạ tầng tự động & Cụm máy chủ Web độ sẵn sàng cao (High Availability) với Ansible, Docker và Telegram ChatOps.
 
-Automated Infrastructure Provisioning & High Availability Web Cluster powered by Ansible, Docker, and Telegram ChatOps.
+> 📖 **[Xem Hướng dẫn Bật / Khởi động lại hệ thống sau khi Tắt máy](STARTUP_GUIDE.md)**
 
-[![Ansible](https://img.shields.io/badge/Ansible-Automation-red.svg?logo=ansible)](https://www.ansible.com/)
-[![Docker](https://img.shields.io/badge/Docker-Containerization-blue.svg?logo=docker)](https://www.docker.com/)
-[![Nginx](https://img.shields.io/badge/Nginx-Load%20Balancer-green.svg?logo=nginx)](https://nginx.org/)
-[![Telegram](https://img.shields.io/badge/Telegram-ChatOps-blue.svg?logo=telegram)](https://telegram.org/)
+## Kiến trúc hệ thống
+Hệ thống được chia thành 5 máy chủ riêng biệt đảm nhận các vai trò khác nhau, bao gồm:
+- **ansible-controller (Máy chủ điều khiển & Cân bằng tải):** `10.45.10.212` - Cài đặt Nginx làm cổng cân bằng tải.
+- **web01:** `10.45.10.84` - Máy chủ Web số 1 (Chạy Docker, Node.js/Python).
+- **web02:** `10.45.10.254` - Máy chủ Web số 2 (Chạy Docker, Node.js/Python).
+- **db01:** `10.45.10.150` - Máy chủ Cơ sở dữ liệu (PostgreSQL).
+- **monitor01:** `10.45.10.48` - Máy chủ Giám sát (Prometheus, Grafana).
 
-
----
-
-## Kiến Trúc Hạ Tầng (System Architecture)
-
-Hệ thống triển khai 5 nút dịch vụ độc lập với quy hoạch mạng chi tiết:
-
-| Server Node | IP Address | Vai trò & Dịch vụ |
-| :--- | :--- | :--- |
-| **`ansible-controller`** | `10.45.10.212` | Nginx Reverse Proxy / Load Balancer & Ansible Master |
-| **`web01`** | `10.45.10.84` | Web Application Node 1 (Docker Engine, App Runtime) |
-| **`web02`** | `10.45.10.254` | Web Application Node 2 (Docker Engine, App Runtime) |
-| **`db01`** | `10.45.10.150` | Database Node (PostgreSQL Engine) |
-| **`monitor01`** | `10.45.10.48` | Monitoring & Logging Node (Prometheus, Grafana, Loki) |
-
----
-
-## Tính Năng Trọng Tâm
-
-- **Infrastructure as Code (IaC):** Tự động hóa 100% việc khởi tạo và cấu hình môi trường bằng Ansible Playbooks.
-- **High Availability & Cân Bằng Tải:** Nginx phân phối lưu lượng truy cập giữa `web01` và `web02`, đảm bảo hệ thống duy trì hoạt động ngay cả khi 1 node gặp sự cố.
-- **Bảo Mật & Tường Lửa:** Tự động thiết lập UFW Firewall, chỉ mở các cổng giao tiếp bắt buộc và phân quyền nghiêm ngặt qua SSH Keypair.
-- **Sao Lưu Dữ Liệu Tự Động:** Ansible Playbook tự động dump và nén sao lưu CSDL PostgreSQL theo định kỳ.
-- **Giám Sát & Thu Thập Log Tập Trung:** Ngăn xếp Prometheus + Grafana + Loki + Promtail thu thập chỉ số tài nguyên và syslog thời gian thực.
-- **Telegram ChatOps:** Điều khiển và giám sát hạ tầng trực tiếp qua tin nhắn Telegram:
-  - `/deploy` - Kích hoạt CI/CD cập nhật mã nguồn mới.
-  - `/status` - Kiểm tra thông số CPU, RAM, Uptime toàn cụm server.
-  - `/backup` - Ra lệnh sao lưu CSDL tức thì.
-  - `/restart_web` - Khởi động lại các container ứng dụng.
-  - `/block_ip <IP>` - Chặn địa chỉ IP nghi vấn trên hệ thống tường lửa.
-  - `/logs` & `/db_size` - Tra cứu log lỗi và dung lượng CSDL.
+## Tính năng nổi bật
+- [x] **Hạ tầng dưới dạng mã (Infrastructure as Code - IaC):** Tự động cài đặt 100% môi trường bằng Ansible. Hoàn toàn không cần thao tác thủ công.
+- [x] **Độ sẵn sàng cao (High Availability - HA):** Cổng cân bằng tải Nginx tự động chia đều lưu lượng truy cập vào hai máy chủ `web01` và `web02`. Nếu một máy chủ gặp sự cố, hệ thống vẫn duy trì hoạt động bình thường qua máy chủ còn lại.
+- [x] **Bảo mật (Security):** Tự động cấu hình tường lửa (UFW) chặn toàn bộ truy cập lạ, chỉ mở các cổng mạng thật sự cần thiết. Thiết lập khóa bảo mật SSH với cơ chế phân quyền nghiêm ngặt.
+- [x] **Tự động sao lưu dữ liệu (Automated DB Backup):** Kịch bản Ansible (Playbook) tự động kết nối vào máy chủ `db01` để sao lưu dữ liệu PostgreSQL và nén lại thành định dạng `.gz`.
+- [x] **Giám sát tài nguyên (Monitoring):** Tích hợp Prometheus và Grafana để theo dõi trực quan các thông số tài nguyên hệ thống (CPU, RAM).
+- [x] **Quản lý nhật ký hệ thống tập trung (Centralized Logging):** Ứng dụng bộ công cụ Loki và Promtail để thu thập và giám sát toàn bộ nhật ký (log) bảo mật của 5 máy chủ tại một bảng điều khiển duy nhất.
+- [x] **Điều hành qua tin nhắn (ChatOps với Telegram Bot):** Điều khiển toàn bộ hạ tầng thông qua tin nhắn Telegram. Hỗ trợ các thao tác tự động:
+  - `/deploy`: Kích hoạt tiến trình CI/CD, tự động tải mã nguồn mới và cập nhật lên máy chủ.
+  - `/backup`: Ra lệnh sao lưu và nén cơ sở dữ liệu ngay lập tức.
+  - `/status`: Kiểm tra trạng thái mức tiêu thụ CPU, RAM và thời gian hoạt động của cụm máy chủ.
+  - `/restart_web`: Khởi động lại các dịch vụ (Docker Container) đang bị treo.
+  - `/logs`: Trích xuất nhật ký lỗi mới nhất từ máy chủ.
+  - `/db_size`: Kiểm tra dung lượng lưu trữ hiện tại của cơ sở dữ liệu.
+  - `/clear_cache`: Xóa bộ nhớ đệm (cache) của hệ thống cân bằng tải Nginx.
+  - `/block_ip <địa chỉ ip>`: Ngăn chặn ngay lập tức IP tấn công thông qua tường lửa trên toàn hệ thống.
 
 ---
+## MINH CHỨNG THỰC TẾ
 
-## Minh Chứng Triển Khai (Proof of Concept)
+**1. Khởi tạo hạ tầng máy chủ ảo (Multipass):**
+![Multipass list](img/multipass-list.png)
 
-### 1. Hạ Tầng & Tự Động Hóa Ansible
-- **Khởi tạo Nodes (Multipass):**
-  ![Multipass list](img/multipass-list.png)
+**2. Giao diện SSH tự động và cấu hình tự động bằng Ansible:**
+![Ansible Ping](img/ansible-ping.png)
 
-- **Ansible Automation Ping Test:**
-  ![Ansible Ping](img/ansible-ping.png)
+**3. Cấu hình máy chủ Cân bằng tải Nginx & Tường lửa UFW:**
+![Nginx Load Balancer Configuration](img/nginx-lb.png)
 
-- **Cấu hình Nginx Load Balancer & UFW Firewall:**
-  ![Nginx Load Balancer Configuration](img/nginx-lb.png)
+**4. Dữ liệu sao lưu cơ sở dữ liệu thành công:**
+![Database Backup Success](img/db-backup.png)
 
-- **Sao Lưu CSDL PostgreSQL:**
-  ![Database Backup Success](img/db-backup.png)
+**5. Giao diện Web & Tính năng Cân bằng tải (Load Balancer):**
+- **Ảnh 1:** Giao diện trang web hiển thị máy chủ `web01` và địa chỉ IP `10.45.10.84`.
+![Web01 Load Balancer](img/chatbot/anh1/b45ed6db6a79eb27b268.jpg)
+- **Ảnh 2:** Giao diện trang web sau khi tải lại (F5), tự động chuyển luồng sang máy chủ `web02` và địa chỉ IP `10.45.10.254`.
+![Web02 Load Balancer](img/chatbot/anh2/4c6be6735ad1db8f82c0.jpg)
 
----
+**6. ChatOps - Điều hành hạ tầng qua tin nhắn Telegram:**
+- **Ảnh 1:** Giao diện trên điện thoại khi gõ lệnh `/status`, Bot phản hồi chi tiết mức tiêu thụ CPU, RAM và thời gian hoạt động.
+![ChatOps Status](img/chatbot/chatops/anh1/image.png)
+- **Ảnh 2:** Giao diện khi gõ lệnh `/block_ip 8.8.8.8`, Bot thông báo tường lửa đã chặn thành công IP tấn công.
+![ChatOps Block IP](img/chatbot/chatops/anh2/image.png)
+- **Ảnh 3:** Giao diện lệnh `/backup` thành công và hiển thị dung lượng file sao lưu.
+![ChatOps Backup](img/chatbot/chatops/anh3/image.png)
+- **Video 1 (Thử nghiệm toàn bộ tính năng của Chatbot)**: 
+[🎥 Bấm vào đây để xem Video Demo ChatOps](https://youtube.com/shorts/OJx1HamoE5Q)
+- **Video 2 (Vận hành ChatOps & CI/CD):** Quay màn hình điện thoại thao tác triển khai mã nguồn (`/deploy`) và khởi động lại web (`/restart_web`) mượt mà.
+[🎥 Bấm vào đây để xem Video Demo Vận hành ChatOps](https://youtube.com/shorts/bH1r4yzjVTc)
 
-### 2. Cân Bằng Tải & Giao Diện Web
-- **Điều hướng lưu lượng tới `web01` (`10.45.10.84`):**
-  ![Web01 Load Balancer](img/chatbot/anh1/b45ed6db6a79eb27b268.jpg)
+**7. Giám sát hệ thống (Monitoring & Centralized Logging):**
+- **Ảnh 1:** Giao diện bảng điều khiển Grafana giám sát tổng quan trạng thái hệ thống.
+![Monitoring 1](img/img04/My%20Documents%20%5B14-08-2026%2019_32%5D/10ecf8d87f7bfe25a76a9.jpg)
+- **Ảnh 2:** Theo dõi chi tiết mức tiêu thụ tài nguyên của từng máy chủ.
+![Monitoring 2](img/img04/My%20Documents%20%5B14-08-2026%2019_32%5D/71d21fe79844191a405511.jpg)
+- **Ảnh 3:** Giao diện quản lý và phân tích nhật ký (log) tập trung với Grafana Loki.
+![Monitoring 3](img/img04/My%20Documents%20%5B14-08-2026%2019_32%5D/cdb29d871a249b7ac23510.jpg)
 
-- **Điều hướng lưu lượng tới `web02` (`10.45.10.254`):**
-  ![Web02 Load Balancer](img/chatbot/anh2/4c6be6735ad1db8f82c0.jpg)
 
----
-
-### 3. Telegram ChatOps
-- **Kiểm tra trạng thái hệ thống (`/status`):**
-  ![ChatOps Status](img/chatbot/chatops/anh1/image.png)
-
-- **Chặn IP tấn công (`/block_ip`):**
-  ![ChatOps Block IP](img/chatbot/chatops/anh2/image.png)
-
-- **Thực thi sao lưu CSDL (`/backup`):**
-  ![ChatOps Backup](img/chatbot/chatops/anh3/image.png)
-
----
-
-### Video Demo Thực Tế
-- **[Video Demo Lệnh ChatOps](https://youtube.com/shorts/OJx1HamoE5Q)**
-- **[Video Demo ChatOps & CI/CD Deployment](https://youtube.com/shorts/bH1r4yzjVTc)**
-
----
-
-## Lộ Trình Phát Triển (Future Roadmap)
-
-- **PostgreSQL High Availability:** Triển khai mô hình Replication (Master-Slave) với Patroni/Repmgr để tự động chuyển vùng sự cố (Failover).
-- **Chiến Lược Backup 3-2-1:** Tự động đồng bộ bản sao lưu ra Storage Server (NAS) độc lập, cách ly để bảo vệ dữ liệu khỏi Ransomware.
-- **Cân Bằng Tải Dự Phòng (Keepalived & HAProxy):** Thiết lập IP ảo (Virtual IP) cho cụm Load Balancer chống đơn điểm sự cố (Single Point of Failure).
-- **Bảo Mật Nâng Cao:** Triển khai Fail2Ban chống Brute-force và kết nối quản trị qua WireGuard VPN.
